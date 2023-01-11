@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller's Admin</title>
+</head>
+<body>
+    <form id="onSubmit">
+        <label for="selling_price">Selling Price :</label>
+        <input type="number" id="selling_price" name="sellingPrice" required>
+        <label for="product_name">Product Name :</label>
+        <input type="text" id="product_name" name="productName" required>
+        <input type="submit" value="Add Product">
+    </form>
+    <h1>Products</h1>
+    <ul id="listItems"></ul>
+    <p>Total values Worth of Products : <span id="totalAmount">0</span></p>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
+    <script>
+        const totalAmount = document.getElementById("totalAmount")
+        function showItems(obj){
+            const parentElement = document.getElementById("listItems")
+            const childElement = `<li id=${obj.name}_${obj.amount}> ${obj.amount} - ${obj.name} <button onclick=deleteItemHandler('${obj._id}','${obj.amount}') >delete</button></li>` 
+            parentElement.innerHTML = parentElement.innerHTML + childElement
+        }
+        const url = "https://crudcrud.com/api/b51645d2606046deabddb42f23ff852d/productss"
+
+        window.addEventListener("DOMContentLoaded",getproductOnDomLoadHandler)
+        async function getproductOnDomLoadHandler(){
+            const res = await axios.get(url)
+            for(let data of res.data){
+                showItems(data) 
+                totalAmount.innerHTML = parseInt(totalAmount.innerHTML) + parseInt(data.amount)
+            }
+        }
+        document.getElementById("onSubmit").addEventListener("submit",onSubmitHandler)
+        async function onSubmitHandler(e){
+            e.preventDefault()
+            const amount = e.target.sellingPrice.value
+            const name = e.target.productName.value
+            const obj = {amount,name}   
+            const res =await axios.post(url,obj)
+            showItems(res.data)
+            totalAmount.innerHTML = parseInt(totalAmount.innerHTML) + parseInt(res.data.amount)
+            e.target.sellingPrice.value = "";
+            e.target.productName.value = "";
+        }
+        async function deleteItemHandler(id,amount){
+            const res = await axios.delete(`${url}/${id}`)
+            location.reload()
+            totalAmount.innerHTML = parseInt(totalAmount.innerHTML) + parseInt(amount)
+        }
+    </script>
+</body>
+</html>
